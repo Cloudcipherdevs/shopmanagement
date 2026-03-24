@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Shop Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .auth-container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .auth-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .auth-logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .auth-logo h1 {
+            font-size: 2rem;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-logo p {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #374151;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn-auth {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 1rem;
+        }
+
+        .btn-auth:active {
+            transform: scale(0.98);
+        }
+
+        .auth-toggle {
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .auth-toggle a {
+            color: #667eea;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .error-msg {
+            background: #fee;
+            border: 1px solid #fcc;
+            color: #c33;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .success-msg {
+            background: #efe;
+            border: 1px solid #cfc;
+            color: #3c3;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .app-container {
+            background-color: #f3f4f6;
+            min-height: 100vh;
+            padding-bottom: 80px;
+            display: none;
+        }
+
+        .app-container.active {
+            display: block;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2563eb 0%, #9333ea 100%);
+            color: white;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .menu-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 1.25rem;
+        }
+
+        .shop-info h1 {
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+
+        .shop-info p {
+            font-size: 0.75rem;
+            color: #bfdbfe;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .menu {
+            background: white;
+            color: #1f2937;
+            display: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .menu.active {
+            display: block;
+        }
+
+        .menu-item {
+            width: 100%;
+            padding: 1rem;
+            text-align: left;
+            border: none;
+            border-bottom: 1px solid #e5e7eb;
+            background: white;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .content {
+            padding: 1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .stat-header {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .card {
+            background: white;
+            padding: 1.25rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+        }
+
+        .product-btn {
+            width: 100%;
+            background: white;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: none;
+            text-align: left;
+            cursor: pointer;
+            margin-bottom: 0.75rem;
+        }
+
+        .btn {
+            padding: 1rem;
+            border: none;
+            border-radius: 0.75rem;
+            font-weight: bold;
+            font-size: 1.125rem;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            box-shadow: 0 -4px 6px rgba(0,0,0,0.1);
+            padding: 0.5rem;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.25rem;
+        }
+
+        .nav-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.5rem;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            border-radius: 0.5rem;
+            cursor: pointer;
+        }
+
+        .nav-btn.active {
+            background: #eff6ff;
+            color: #2563eb;
+        }
+
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        input[type="text"], input[type="number"], input[type="tel"] {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .camera-scanner {
+            position: fixed;
+            inset: 0;
+            background: black;
+            z-index: 1000;
+            display: none;
+        }
+
+        .camera-scanner.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .scanner-header {
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .scanner-video {
+            flex: 1;
+            width: 100%;
+            object-fit: cover;
+        }
+
+        .scanner-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 300px;
+            height: 200px;
+            border: 3px solid #10b981;
+            border-radius: 1rem;
+            box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
+        }
+
+        .scanner-overlay::before,
+        .scanner-overlay::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #10b981;
+        }
+
+        .scanner-overlay::before {
+            top: -3px;
+            left: -3px;
+            border-right: none;
+            border-bottom: none;
+        }
+
+        .scanner-overlay::after {
+            bottom: -3px;
+            right: -3px;
+            border-left: none;
+            border-top: none;
+        }
+
+        .scanner-instructions {
+            position: absolute;
+            bottom: 100px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 1rem;
+            background: rgba(0,0,0,0.6);
+        }
+
+        .scan-success {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #10b981;
+            color: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: none;
+            text-align: center;
+        }
+
+        .scan-success.active {
+            display: block;
+            animation: scanSuccess 0.5s ease;
+        }
+
+        @keyframes scanSuccess {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        .scanned-items-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+
+        .scanned-item {
+            background: #f0fdf4;
+            border: 2px solid #86efac;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .audit-log {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <!-- AUTH SCREEN -->
+    <div id="authScreen">
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-logo">
+                    <h1>🏪 ShopManager</h1>
+                    <p>Your Smart POS System</p>
+                </div>
+
+                <div id="errorMsg" class="error-msg hidden"></div>
+                <div id="successMsg" class="success-msg hidden"></div>
+
+                <!-- LOGIN FORM -->
+                <div id="loginForm">
+                    <!-- Demo Accounts Quick Login -->
+                    <div style="background: #eff6ff; border: 2px solid #bfdbfe; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem;">
+                        <h3 style="font-size: 0.875rem; font-weight: bold; color: #1e40af; margin-bottom: 0.75rem;">🎯 DEMO ACCOUNTS - Try It Now!</h3>
+                        
+                        <div style="background: white; border-radius: 0.5rem; padding: 0.75rem; margin-bottom: 0.5rem; cursor: pointer;" onclick="quickLogin('demo-owner', 'owner123')">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-weight: bold; color: #10b981;">👔 OWNER Account</div>
+                                    <div style="font-size: 0.75rem; color: #6b7280;">Full access • Can approve items</div>
+                                </div>
+                                <div style="background: #10b981; color: white; padding: 0.25rem 0.75rem; border-radius: 0.25rem; font-size: 0.75rem; font-weight: bold;">Login</div>
+                            </div>
+                        </div>
+
+                        <div style="background: white; border-radius: 0.5rem; padding: 0.75rem; cursor: pointer;" onclick="quickLogin('demo-worker', 'worker123')">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-weight: bold; color: #f59e0b;">👤 WORKER Account</div>
+                                    <div style="font-size: 0.75rem; color: #6b7280;">Limited access • Items need approval</div>
+                                </div>
+                                <div style="background: #f59e0b; color: white; padding: 0.25rem 0.75rem; border-radius: 0.25rem; font-size: 0.75rem; font-weight: bold;">Login</div>
+                            </div>
+                        </div>
+
+                        <div style="font-size: 0.75rem; color: #6b7280; margin-top: 0.75rem; text-align: center;">
+                            Click any account above to login instantly!
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; color: #6b7280; font-size: 0.875rem; margin-bottom: 1rem;">
+                        — OR LOGIN MANUALLY —
+                    </div>
+
+                    <div class="form-group">
+                        <label>Shop ID / Email</label>
+                        <input type="text" id="loginEmail" placeholder="demo-owner or owner@demo.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="loginPassword" placeholder="owner123 or worker123">
+                    </div>
+                    <button class="btn-auth" onclick="handleLogin()">Login</button>
+                    <div class="auth-toggle">
+                        Don't have an account? <a href="#" onclick="showRegister(); return false;">Register</a>
+                    </div>
+                </div>
+
+                <!-- REGISTER FORM -->
+                <div id="registerForm" class="hidden">
+                    <div style="background: #dcfce7; border: 2px solid #86efac; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
+                        <h3 style="font-size: 0.875rem; font-weight: bold; color: #166534; margin-bottom: 0.5rem;">🎉 One-Time Purchase System</h3>
+                        <p style="font-size: 0.75rem; color: #166534;">
+                            <strong>Pay Once, Own Forever!</strong><br>
+                            KSh 15,000 - No monthly fees!<br>
+                            Contact: <strong>+254 712 345 678</strong>
+                        </p>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Activation Code</label>
+                        <input type="text" id="regActivationCode" placeholder="Enter code from seller" style="text-transform: uppercase;">
+                        <div style="font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem;">
+                            You'll receive this code after purchase
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Shop Name</label>
+                        <input type="text" id="regShopName" placeholder="Jane's Store">
+                    </div>
+                    <div class="form-group">
+                        <label>Owner Name</label>
+                        <input type="text" id="regOwnerName" placeholder="Jane Wanjiru">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" id="regPhone" placeholder="0712345678">
+                    </div>
+                    <div class="form-group">
+                        <label>Email (Optional)</label>
+                        <input type="text" id="regEmail" placeholder="jane@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Create Password</label>
+                        <input type="password" id="regPassword" placeholder="Min 6 characters">
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm Password</label>
+                        <input type="password" id="regConfirmPassword" placeholder="Re-enter password">
+                    </div>
+
+                    <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
+                        <div style="font-size: 0.875rem; font-weight: bold; color: #1e40af; margin-bottom: 0.5rem;">💎 What You Get:</div>
+                        <div style="font-size: 0.75rem; color: #1e40af; line-height: 1.6;">
+                            ✅ Complete POS System<br>
+                            ✅ Custom Domain (yourshop.com)<br>
+                            ✅ Unlimited Products & Sales<br>
+                            ✅ Multi-User Access (Owner + Workers)<br>
+                            ✅ Barcode Scanner<br>
+                            ✅ Full Reports & Analytics<br>
+                            ✅ Free Setup & Training<br>
+                            ✅ Lifetime Updates
+                        </div>
+                    </div>
+
+                    <button class="btn-auth" onclick="handleRegister()">Activate System</button>
+                    
+                    <div style="text-align: center; margin-top: 1rem; padding: 1rem; background: #f9fafb; border-radius: 0.5rem;">
+                        <div style="font-size: 0.875rem; font-weight: bold; margin-bottom: 0.5rem;">Want to Purchase?</div>
+                        <button onclick="showPurchaseInfo()" style="background: #10b981; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: bold; cursor: pointer;">
+                            📞 Contact Seller
+                        </button>
+                        <div style="font-size: 0.75rem; color: #6b7280; margin-top: 0.75rem;">
+                            <strong>💰 KSh 15,000</strong> One-Time Payment<br>
+                            We come to your shop & set up everything!
+                        </div>
+                    </div>
+
+                    <div class="auth-toggle" style="margin-top: 1rem;">
+                        Already activated? <a href="#" onclick="showLogin(); return false;">Login</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="appContainer" class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-top">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <button class="menu-btn" onclick="toggleMenu()">☰</button>
+                    <div class="shop-info">
+                        <h1 id="shopName">Loading...</h1>
+                        <p id="userName">Loading...</p>
+                        <span class="user-badge" id="userRole">Owner</span>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="handleLogout()">Logout</button>
+            </div>
+            
+            <!-- Menu -->
+            <div id="menu" class="menu">
+                <button class="menu-item" onclick="showView('home')">🏠 Dashboard</button>
+                <button class="menu-item" onclick="showView('sell')">🛒 Make Sale</button>
+                <button class="menu-item" onclick="showView('stock')">📦 Stock Management</button>
+                <button class="menu-item" onclick="showView('reports')">📊 Reports</button>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- HOME VIEW -->
+            <div id="homeView" class="view">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">💰 Investment</div>
+                        <div class="stat-value" id="totalInvestment">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">✅ Profit</div>
+                        <div class="stat-value" style="color: #10b981;" id="totalProfit">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">📦 Stock Value</div>
+                        <div class="stat-value" id="stockValue">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">📈 Stock Sold</div>
+                        <div class="stat-value" id="stockSold">0</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 style="margin-bottom: 1rem;">📊 Today's Performance</h3>
+                    <div class="flex-between" style="margin-bottom: 0.5rem;">
+                        <span>Sales Count:</span>
+                        <span style="font-weight: bold;" id="todaySalesCount">0</span>
+                    </div>
+                    <div class="flex-between">
+                        <span>Revenue:</span>
+                        <span style="font-weight: bold; color: #10b981;">KSh <span id="todayRevenue">0</span></span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 style="margin-bottom: 1rem;">🛒 Recent Sales</h3>
+                    <div id="recentSales">
+                        <p style="text-align: center; color: #6b7280; padding: 1rem 0;">No sales yet</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 style="margin-bottom: 1rem;">⚙️ Quick Actions</h3>
+                    <button class="btn btn-primary" onclick="showView('stock')" style="margin-bottom: 0.75rem;">➕ Add Products</button>
+                    <button class="btn btn-success" onclick="showView('sell')">💰 Make Sale</button>
+                </div>
+            </div>
+
+            <!-- SELL VIEW -->
+            <div id="sellView" class="view hidden">
+                <h2 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem;">Make Sale</h2>
+                <div id="productList"></div>
+            </div>
+
+            <!-- STOCK VIEW -->
+            <div id="stockView" class="view hidden">
+                <div class="flex-between" style="margin-bottom: 1rem;">
+                    <h2 style="font-size: 1.5rem; font-weight: bold;">Stock</h2>
+                    <button onclick="startStockScanning()" style="background: #10b981; color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; border: none; font-weight: bold; cursor: pointer;">📷 Scan Items</button>
+                </div>
+
+                <!-- Scanned Items (Pending Approval) -->
+                <div id="pendingStockSection" class="hidden">
+                    <div class="card">
+                        <h3 style="margin-bottom: 1rem; color: #f59e0b;">⏳ Pending Approval</h3>
+                        <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 1rem;">These items were scanned by <strong id="scannerName"></strong> and need owner approval</p>
+                        
+                        <div id="pendingItemsList" class="scanned-items-list"></div>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
+                            <button onclick="rejectPendingStock()" class="btn" style="background: #ef4444; color: white;">❌ Reject All</button>
+                            <button onclick="approvePendingStock()" class="btn btn-success">✅ Approve All</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Stock List -->
+                <div class="card">
+                    <h3 style="margin-bottom: 1rem;">Current Inventory</h3>
+                    <div id="stockList"></div>
+                </div>
+
+                <!-- Manual Add (Owner Only) -->
+                <div id="manualAddSection" class="hidden">
+                    <div class="card">
+                        <h3 style="margin-bottom: 1rem;">Manual Add (Owner Only)</h3>
+                        <input type="text" id="newProductName" placeholder="Product Name *">
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
+                            <input type="number" id="newBuyPrice" placeholder="Buy Price *">
+                            <input type="number" id="newSellPrice" placeholder="Sell Price *">
+                        </div>
+                        <input type="number" id="newQuantity" placeholder="Quantity *">
+                        <input type="text" id="newBarcode" placeholder="Barcode (optional)">
+                        <button class="btn btn-primary" onclick="addNewProduct()">Add Product</button>
+                        <button class="btn" style="background: #e5e7eb; color: #374151; margin-top: 0.5rem;" onclick="hideManualAdd()">Cancel</button>
+                    </div>
+                </div>
+
+                <button onclick="showManualAdd()" class="btn" style="background: #6b7280; color: white; margin-top: 1rem;">+ Manual Add (Owner)</button>
+            </div>
+
+            <!-- REPORTS VIEW -->
+            <div id="reportsView" class="view hidden">
+                <h2 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem;">Reports</h2>
+                
+                <div class="card">
+                    <h3 style="margin-bottom: 1rem;">All Time Performance</h3>
+                    <div class="flex-between" style="padding: 0.75rem 0; border-bottom: 1px solid #e5e7eb;">
+                        <span>Total Sales</span>
+                        <span style="font-weight: bold;" id="reportTotalSales">0</span>
+                    </div>
+                    <div class="flex-between" style="padding: 0.75rem 0; border-bottom: 1px solid #e5e7eb;">
+                        <span>Total Revenue</span>
+                        <span style="font-weight: bold; color: #2563eb;" id="reportTotalRevenue">KSh 0</span>
+                    </div>
+                    <div class="flex-between" style="padding: 0.75rem 0;">
+                        <span>Total Profit</span>
+                        <span style="font-weight: bold; color: #10b981;" id="reportTotalProfit">KSh 0</span>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="exportData()">💾 Download Backup</button>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <button class="nav-btn active" onclick="showView('home')">
+                <span style="font-size: 1.5rem;">🏠</span>
+                <span style="font-size: 0.75rem; margin-top: 0.25rem;">Home</span>
+            </button>
+            <button class="nav-btn" onclick="showView('sell')">
+                <span style="font-size: 1.5rem;">🛒</span>
+                <span style="font-size: 0.75rem; margin-top: 0.25rem;">Sell</span>
+            </button>
+            <button class="nav-btn" onclick="showView('stock')">
+                <span style="font-size: 1.5rem;">📦</span>
+                <span style="font-size: 0.75rem; margin-top: 0.25rem;">Stock</span>
+            </button>
+            <button class="nav-btn" onclick="showView('reports')">
+                <span style="font-size: 1.5rem;">📊</span>
+                <span style="font-size: 0.75rem; margin-top: 0.25rem;">Reports</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Camera Barcode Scanner -->
+    <div id="cameraScanner" class="camera-scanner">
+        <div class="scanner-header">
+            <h2 style="font-size: 1.25rem; font-weight: bold;">📷 Scan Items to Add</h2>
+            <button onclick="stopStockScanning()" style="background: #ef4444; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; border: none; font-weight: bold;">Done</button>
+        </div>
+        
+        <div style="position: relative; flex: 1;">
+            <video id="scannerVideo" class="scanner-video" autoplay playsinline></video>
+            <div class="scanner-overlay"></div>
+            <div class="scanner-instructions">
+                Position barcode within the frame<br>
+                <span style="font-size: 0.875rem;">Scanned: <span id="scannedCount">0</span> items</span>
+            </div>
+            <div id="scanSuccess" class="scan-success">
+                ✅ Scanned!
+            </div>
+        </div>
+        
+        <canvas id="scannerCanvas" style="display: none;"></canvas>
+    </div>
+
+    <!-- Production Barcode Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBnRWwI1xDe68RTJ0R9YYuqnUHS4huh7vo",
+            authDomain: "shopmanagement-9fe46.firebaseapp.com",
+            projectId: "shopmanagement-9fe46",
+            storageBucket: "shopmanagement-9fe46.firebasestorage.app",
+            messagingSenderId: "921694324827",
+            appId: "1:921694324827:web:f7fb8cc1b30b9362a3577e",
+            measurementId: "G-63STX9YWC0"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        console.log('🔥 Firebase initialized successfully!');
+
+        // Global State
+        var currentUser = null;
+        var inventory = [];
+        var sales = [];
+        var pendingStock = [];
+        var scannedItems = [];
+        var isScanning = false;
+        var useFirebase = true;
+
+        // LocalStorage Keys
+        var USERS_KEY = 'shopmanager_users';
+        var CURRENT_USER_KEY = 'shopmanager_current_user';
+        var VALID_CODES_KEY = 'shopmanager_activation_codes';
+
+        // Activation Codes
+        function getValidCodes() {
+            var codes = localStorage.getItem(VALID_CODES_KEY);
+            if (!codes) {
+                var defaultCodes = [
+                    { code: 'DEMO2024', shopId: null, used: false, generatedDate: new Date().toISOString() },
+                    { code: 'TEST2024', shopId: null, used: false, generatedDate: new Date().toISOString() },
+                    { code: 'FREE2024', shopId: null, used: false, generatedDate: new Date().toISOString() }
+                ];
+                localStorage.setItem(VALID_CODES_KEY, JSON.stringify(defaultCodes));
+                return defaultCodes;
+            }
+            return JSON.parse(codes);
+        }
+
+        function validateActivationCode(code) {
+            var codes = getValidCodes();
+            var activationCode = codes.find(function(c) {
+                return c.code.toLowerCase() === code.toLowerCase() && c.used === false;
+            });
+
+            if (!activationCode) {
+                return { valid: false, message: 'Invalid or already used activation code' };
+            }
+
+            return { valid: true, code: activationCode };
+        }
+
+        function markCodeAsUsed(code, shopId) {
+            var codes = getValidCodes();
+            var codeIndex = codes.findIndex(function(c) {
+                return c.code.toLowerCase() === code.toLowerCase();
+            });
+
+            if (codeIndex !== -1) {
+                codes[codeIndex].shopId = shopId;
+                codes[codeIndex].used = true;
+                codes[codeIndex].activatedDate = new Date().toISOString();
+                localStorage.setItem(VALID_CODES_KEY, JSON.stringify(codes));
+            }
+        }
+
+        function showPurchaseInfo() {
+            alert('💰 PURCHASE SHOPMANAGER POS\n\n' +
+                  '🎯 ONE-TIME PAYMENT: KSh 15,000\n' +
+                  '✅ No Monthly Fees!\n' +
+                  '✅ Own the System Forever\n\n' +
+                  '📦 WHAT YOU GET:\n' +
+                  '✓ Complete POS System\n' +
+                  '✓ Your Own Domain (yourshop.com)\n' +
+                  '✓ Unlimited Products & Sales\n' +
+                  '✓ Barcode Scanner\n' +
+                  '✓ Multi-User Access\n' +
+                  '✓ Free Setup & Training\n' +
+                  '✓ Lifetime Updates\n\n' +
+                  '📞 CONTACT:\n' +
+                  'Phone: +254 712 345 678\n' +
+                  'WhatsApp: +254 712 345 678\n\n' +
+                  '💡 We come to your shop and set up everything!\n' +
+                  '🎁 Get started today!');
+        }
+
+        // Initialize Demo Accounts
+        function initializeDemoAccounts() {
+            var users = getAllUsers();
+            
+            if (users.length === 0) {
+                var demoUsers = [
+                    {
+                        shopId: "demo-owner",
+                        shopName: "Jane's Demo Store",
+                        ownerName: "Jane Wanjiru (Owner)",
+                        phone: "0712345678",
+                        email: "owner@demo.com",
+                        password: "owner123",
+                        role: "owner",
+                        createdAt: "2025-03-01T10:00:00",
+                        inventory: [
+                            { id: 1, name: "Bread", barcode: "1234567890", buyPrice: 40, sellPrice: 50, quantity: 50, totalInvested: 2000, addedBy: "Jane Wanjiru (Owner)", addedAt: "01/03/2025 10:00 AM" },
+                            { id: 2, name: "Milk 1L", barcode: "2345678901", buyPrice: 50, sellPrice: 65, quantity: 30, totalInvested: 1500, addedBy: "Jane Wanjiru (Owner)", addedAt: "01/03/2025 10:05 AM" },
+                            { id: 3, name: "Sugar 1kg", barcode: "3456789012", buyPrice: 100, sellPrice: 130, quantity: 25, totalInvested: 2500, addedBy: "Jane Wanjiru (Owner)", addedAt: "01/03/2025 10:10 AM" },
+                            { id: 4, name: "Rice 2kg", barcode: "4567890123", buyPrice: 150, sellPrice: 200, quantity: 40, totalInvested: 6000, addedBy: "Jane Wanjiru (Owner)", addedAt: "01/03/2025 10:15 AM" }
+                        ],
+                        sales: [
+                            { id: 1, productName: "Bread", quantity: 3, totalPrice: 150, profit: 30, date: new Date().toLocaleString() },
+                            { id: 2, productName: "Milk 1L", quantity: 2, totalPrice: 130, profit: 30, date: new Date().toLocaleString() }
+                        ],
+                        pendingStock: []
+                    },
+                    {
+                        shopId: "demo-worker",
+                        shopName: "Jane's Demo Store",
+                        ownerName: "John Kamau (Worker)",
+                        phone: "0723456789",
+                        email: "worker@demo.com",
+                        password: "worker123",
+                        role: "worker",
+                        createdAt: "2025-03-05T09:00:00",
+                        inventory: [
+                            { id: 1, name: "Bread", barcode: "1234567890", buyPrice: 40, sellPrice: 50, quantity: 50, totalInvested: 2000, addedBy: "Jane Wanjiru (Owner)", addedAt: "01/03/2025 10:00 AM" },
+                            { id: 2, name: "Milk 1L", barcode: "2345678901", buyPrice: 50, sellPrice: 65, quantity: 30, totalInvested: 1500, addedBy: "Jane Wanjiru (Owner)", addedAt: "01/03/2025 10:05 AM" },
+                            { id: 3, name: "Sugar 1kg", barcode: "3456789012", buyPrice: 100, sellPrice: 130, quantity: 25, totalInvested: 2500, addedBy: "Jane Wanjiru (Owner)", addedAt: "01/03/2025 10:10 AM" },
+                            { id: 4, name: "Rice 2kg", barcode: "4567890123", buyPrice: 150, sellPrice: 200, quantity: 40, totalInvested: 6000, addedBy: "Jane Wanjiru (Owner)", addedAt: "01/03/2025 10:15 AM" }
+                        ],
+                        sales: [
+                            { id: 1, productName: "Bread", quantity: 3, totalPrice: 150, profit: 30, date: new Date().toLocaleString() },
+                            { id: 2, productName: "Milk 1L", quantity: 2, totalPrice: 130, profit: 30, date: new Date().toLocaleString() }
+                        ],
+                        pendingStock: [
+                            { barcode: "5678901234", name: "Cooking Oil", quantity: 5, scannedAt: new Date().toLocaleString(), addedBy: "John Kamau (Worker)" },
+                            { barcode: "6789012345", name: "Tea Leaves", quantity: 3, scannedAt: new Date().toLocaleString(), addedBy: "John Kamau (Worker)" }
+                        ]
+                    }
+                ];
+                
+                saveAllUsers(demoUsers);
+            }
+        }
+
+        // Initialize
+        function init() {
+            initializeDemoAccounts();
+            checkAuth();
+        }
+
+        // Check Authentication
+        function checkAuth() {
+            var savedUser = localStorage.getItem(CURRENT_USER_KEY);
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                loadUserData();
+                showApp();
+            } else {
+                showAuthScreen();
+            }
+        }
+
+        // Show/Hide Screens
+        function showAuthScreen() {
+            document.getElementById('authScreen').style.display = 'block';
+            document.getElementById('appContainer').classList.remove('active');
+        }
+
+        function showApp() {
+            document.getElementById('authScreen').style.display = 'none';
+            document.getElementById('appContainer').classList.add('active');
+            
+            document.getElementById('shopName').textContent = currentUser.shopName;
+            document.getElementById('userName').textContent = currentUser.ownerName;
+            document.getElementById('userRole').textContent = currentUser.role || 'Owner';
+            
+            loadUserData();
+            updateDashboard();
+        }
+
+        // Toggle Auth Forms
+        function showLogin() {
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('registerForm').classList.add('hidden');
+            hideMessages();
+        }
+
+        function showRegister() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.remove('hidden');
+            hideMessages();
+        }
+
+        // Show Messages
+        function showError(msg) {
+            document.getElementById('errorMsg').textContent = msg;
+            document.getElementById('errorMsg').classList.remove('hidden');
+            document.getElementById('successMsg').classList.add('hidden');
+        }
+
+        function showSuccess(msg) {
+            document.getElementById('successMsg').textContent = msg;
+            document.getElementById('successMsg').classList.remove('hidden');
+            document.getElementById('errorMsg').classList.add('hidden');
+        }
+
+        function hideMessages() {
+            document.getElementById('errorMsg').classList.add('hidden');
+            document.getElementById('successMsg').classList.add('hidden');
+        }
+
+        // Get All Users
+        function getAllUsers() {
+            var users = localStorage.getItem(USERS_KEY);
+            return users ? JSON.parse(users) : [];
+        }
+
+        // Save All Users
+        function saveAllUsers(users) {
+            localStorage.setItem(USERS_KEY, JSON.stringify(users));
+        }
+
+        // Generate Shop ID
+        function generateShopId(shopName) {
+            return shopName.toLowerCase().replace(/[^a-z0-9]/g, '') + Math.floor(Math.random() * 1000);
+        }
+
+        // Handle Registration
+        function handleRegister() {
+            var activationCode = document.getElementById('regActivationCode').value.trim().toUpperCase();
+            var shopName = document.getElementById('regShopName').value.trim();
+            var ownerName = document.getElementById('regOwnerName').value.trim();
+            var phone = document.getElementById('regPhone').value.trim();
+            var email = document.getElementById('regEmail').value.trim();
+            var password = document.getElementById('regPassword').value;
+            var confirmPassword = document.getElementById('regConfirmPassword').value;
+
+            if (!activationCode) {
+                showError('Please enter your activation code.\n\nContact +254 712 345 678 to purchase.\nPrice: KSh 15,000 one-time');
+                return;
+            }
+
+            var codeValidation = validateActivationCode(activationCode);
+            if (!codeValidation.valid) {
+                showError(codeValidation.message + '\n\nContact +254 712 345 678 to purchase a new code.');
+                return;
+            }
+
+            if (!shopName || !ownerName || !phone || !password) {
+                showError('Please fill all required fields');
+                return;
+            }
+
+            if (password.length < 6) {
+                showError('Password must be at least 6 characters');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showError('Passwords do not match');
+                return;
+            }
+
+            var users = getAllUsers();
+            var shopId = generateShopId(shopName);
+            
+            var existingUser = users.find(function(u) {
+                return u.shopId === shopId || (email && u.email === email);
+            });
+
+            if (existingUser) {
+                showError('Shop ID or email already exists');
+                return;
+            }
+
+            var newUser = {
+                shopId: shopId,
+                shopName: shopName,
+                ownerName: ownerName,
+                phone: phone,
+                email: email || shopId + '@shopmanager.local',
+                password: password,
+                role: 'owner',
+                activationCode: activationCode,
+                purchaseType: 'one-time',
+                createdAt: new Date().toISOString(),
+                inventory: [],
+                sales: [],
+                pendingStock: []
+            };
+
+            users.push(newUser);
+            saveAllUsers(users);
+            markCodeAsUsed(activationCode, shopId);
+
+            // ✅ AUTO-LOGIN: Show success message then log user in directly
+            showSuccess('✅ System Activated! Welcome, ' + ownerName + '! Logging you in...');
+
+            setTimeout(function() {
+                // Set the new user as current user
+                currentUser = newUser;
+                localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(newUser));
+
+                // Initialize empty data
+                inventory = [];
+                sales = [];
+
+                // Go straight into the app — no need to go to login screen
+                showApp();
+            }, 1500);
+        }
+
+        // Quick Login for Demo
+        function quickLogin(shopId, password) {
+            document.getElementById('loginEmail').value = shopId;
+            document.getElementById('loginPassword').value = password;
+            handleLogin();
+        }
+
+        // Handle Login
+        function handleLogin() {
+            var emailOrShopId = document.getElementById('loginEmail').value.trim();
+            var password = document.getElementById('loginPassword').value;
+
+            if (!emailOrShopId || !password) {
+                showError('Please enter your credentials');
+                return;
+            }
+
+            var users = getAllUsers();
+            var user = users.find(function(u) {
+                return (u.shopId === emailOrShopId || u.email === emailOrShopId) && u.password === password;
+            });
+
+            if (!user) {
+                showError('Invalid credentials');
+                return;
+            }
+
+            currentUser = user;
+            localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
+            
+            loadUserData();
+            showApp();
+        }
+
+        // Handle Logout
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                saveUserData();
+                localStorage.removeItem(CURRENT_USER_KEY);
+                currentUser = null;
+                inventory = [];
+                sales = [];
+                showAuthScreen();
+            }
+        }
+
+        // Load User Data
+        function loadUserData() {
+            var users = getAllUsers();
+            var user = users.find(function(u) {
+                return u.shopId === currentUser.shopId;
+            });
+
+            if (user) {
+                inventory = user.inventory || [];
+                sales = user.sales || [];
+            }
+        }
+
+        // Save User Data
+        function saveUserData() {
+            var users = getAllUsers();
+            var userIndex = users.findIndex(function(u) {
+                return u.shopId === currentUser.shopId;
+            });
+
+            if (userIndex !== -1) {
+                users[userIndex].inventory = inventory;
+                users[userIndex].sales = sales;
+                users[userIndex].lastUpdated = new Date().toISOString();
+                saveAllUsers(users);
+                
+                currentUser.inventory = inventory;
+                currentUser.sales = sales;
+                localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(currentUser));
+            }
+        }
+
+        // Toggle Menu
+        function toggleMenu() {
+            document.getElementById('menu').classList.toggle('active');
+        }
+
+        // Show View
+        function showView(viewName) {
+            document.querySelectorAll('.view').forEach(function(v) {
+                v.classList.add('hidden');
+            });
+            document.getElementById(viewName + 'View').classList.remove('hidden');
+            
+            document.querySelectorAll('.nav-btn').forEach(function(btn) {
+                btn.classList.remove('active');
+            });
+            
+            document.getElementById('menu').classList.remove('active');
+            
+            if (viewName === 'home') updateDashboard();
+            if (viewName === 'sell') renderProductList();
+            if (viewName === 'stock') renderStockList();
+            if (viewName === 'reports') renderReports();
+        }
+
+        // Show/Hide Manual Add
+        function showManualAdd() {
+            document.getElementById('manualAddSection').classList.remove('hidden');
+        }
+
+        function hideManualAdd() {
+            document.getElementById('manualAddSection').classList.add('hidden');
+        }
+
+        // Add New Product
+        function addNewProduct() {
+            if (currentUser.role !== 'owner') {
+                alert('Only the owner can manually add items.');
+                return;
+            }
+
+            var name = document.getElementById('newProductName').value.trim();
+            var buyPrice = parseFloat(document.getElementById('newBuyPrice').value);
+            var sellPrice = parseFloat(document.getElementById('newSellPrice').value);
+            var quantity = parseInt(document.getElementById('newQuantity').value);
+            var barcode = document.getElementById('newBarcode').value.trim();
+
+            if (!name || !buyPrice || !sellPrice || !quantity) {
+                alert('Please fill all required fields');
+                return;
+            }
+
+            var product = {
+                id: Date.now(),
+                name: name,
+                buyPrice: buyPrice,
+                sellPrice: sellPrice,
+                quantity: quantity,
+                barcode: barcode || '',
+                totalInvested: buyPrice * quantity,
+                addedBy: currentUser.ownerName,
+                addedAt: new Date().toLocaleString()
+            };
+
+            inventory.push(product);
+            saveUserData();
+            updateDashboard();
+            renderStockList();
+            hideManualAdd();
+            
+            document.getElementById('newProductName').value = '';
+            document.getElementById('newBuyPrice').value = '';
+            document.getElementById('newSellPrice').value = '';
+            document.getElementById('newQuantity').value = '';
+            document.getElementById('newBarcode').value = '';
+            
+            alert('✅ Product added successfully!');
+        }
+
+        // Make Sale
+        function makeSale(productId) {
+            var product = inventory.find(function(p) { return p.id === productId; });
+            if (!product) return;
+
+            var qty = prompt('Quantity to sell:', '1');
+            if (!qty || parseInt(qty) <= 0) return;
+
+            var qtyNum = parseInt(qty);
+            if (qtyNum > product.quantity) {
+                alert('Not enough stock!');
+                return;
+            }
+
+            var sale = {
+                id: Date.now(),
+                productName: product.name,
+                quantity: qtyNum,
+                totalPrice: product.sellPrice * qtyNum,
+                profit: (product.sellPrice - product.buyPrice) * qtyNum,
+                date: new Date().toLocaleString()
+            };
+
+            sales.unshift(sale);
+            
+            var productIndex = inventory.findIndex(function(p) { return p.id === productId; });
+            inventory[productIndex].quantity -= qtyNum;
+
+            saveUserData();
+            updateDashboard();
+            alert('✅ Sale Complete!\nTotal: KSh ' + sale.totalPrice + '\nProfit: KSh ' + sale.profit);
+        }
+
+        // Calculate Stats
+        function calculateStats() {
+            var totalInvestment = inventory.reduce(function(sum, item) {
+                return sum + item.totalInvested;
+            }, 0);
+            var currentStock = inventory.reduce(function(sum, item) {
+                return sum + (item.buyPrice * item.quantity);
+            }, 0);
+            var totalRevenue = sales.reduce(function(sum, sale) {
+                return sum + sale.totalPrice;
+            }, 0);
+            var totalProfit = sales.reduce(function(sum, sale) {
+                return sum + sale.profit;
+            }, 0);
+            var stockSold = totalInvestment - currentStock;
+
+            var today = new Date().toLocaleDateString();
+            var todaySales = sales.filter(function(s) {
+                return s.date.includes(today);
+            });
+            var todayRevenue = todaySales.reduce(function(sum, s) {
+                return sum + s.totalPrice;
+            }, 0);
+
+            return {
+                totalInvestment: totalInvestment,
+                currentStock: currentStock,
+                totalRevenue: totalRevenue,
+                totalProfit: totalProfit,
+                stockSold: stockSold,
+                todaySales: todaySales.length,
+                todayRevenue: todayRevenue
+            };
+        }
+
+        // Update Dashboard
+        function updateDashboard() {
+            var stats = calculateStats();
+            
+            document.getElementById('totalInvestment').textContent = (stats.totalInvestment / 1000).toFixed(1) + 'K';
+            document.getElementById('totalProfit').textContent = (stats.totalProfit / 1000).toFixed(1) + 'K';
+            document.getElementById('stockValue').textContent = (stats.currentStock / 1000).toFixed(1) + 'K';
+            document.getElementById('stockSold').textContent = (stats.stockSold / 1000).toFixed(1) + 'K';
+
+            document.getElementById('todaySalesCount').textContent = stats.todaySales;
+            document.getElementById('todayRevenue').textContent = stats.todayRevenue.toLocaleString();
+
+            var recentHTML = sales.length === 0 
+                ? '<p style="text-align: center; color: #6b7280; padding: 1rem 0;">No sales yet</p>'
+                : sales.slice(0, 5).map(function(sale) {
+                    return '<div style="border-left: 4px solid #10b981; background: #f9fafb; padding: 0.75rem; border-radius: 0 0.5rem 0.5rem 0; margin-bottom: 0.5rem;">' +
+                        '<div class="flex-between" style="margin-bottom: 0.25rem;">' +
+                            '<span style="font-weight: 600;">' + sale.productName + '</span>' +
+                            '<span style="font-weight: bold; color: #10b981;">KSh ' + sale.totalPrice + '</span>' +
+                        '</div>' +
+                        '<div style="font-size: 0.875rem; color: #6b7280;">Qty: ' + sale.quantity + ' | Profit: KSh ' + sale.profit + '</div>' +
+                    '</div>';
+                }).join('');
+            document.getElementById('recentSales').innerHTML = recentHTML;
+        }
+
+        // Render Product List
+        function renderProductList() {
+            var availableProducts = inventory.filter(function(item) {
+                return item.quantity > 0;
+            });
+            
+            var html = availableProducts.map(function(item) {
+                return '<button class="product-btn" onclick="makeSale(' + item.id + ')">' +
+                    '<div class="flex-between">' +
+                        '<div>' +
+                            '<div style="font-weight: bold; font-size: 1.125rem;">' + item.name + '</div>' +
+                            '<div style="font-size: 0.875rem; color: #6b7280;">Stock: ' + item.quantity + '</div>' +
+                        '</div>' +
+                        '<div style="text-align: right;">' +
+                            '<div style="font-size: 1.25rem; font-weight: bold; color: #2563eb;">KSh ' + item.sellPrice + '</div>' +
+                            '<div style="font-size: 0.75rem; color: #10b981;">+KSh ' + (item.sellPrice - item.buyPrice) + '</div>' +
+                        '</div>' +
+                    '</div>' +
+                '</button>';
+            }).join('');
+            
+            document.getElementById('productList').innerHTML = html || '<p style="text-align: center; color: #6b7280;">No products available</p>';
+        }
+
+        // Render Stock List
+        function renderStockList() {
+            var html = inventory.map(function(item) {
+                var auditLog = item.addedBy ? '<div class="audit-log">Added by ' + item.addedBy + ' on ' + item.addedAt + '</div>' : '';
+                return '<div class="product-btn">' +
+                    '<div class="flex-between">' +
+                        '<div style="flex: 1;">' +
+                            '<div style="font-weight: bold; font-size: 1.125rem;">' + item.name + '</div>' +
+                            '<div style="font-size: 0.875rem; color: #6b7280;">' + 
+                                (item.barcode ? 'Barcode: ' + item.barcode + ' | ' : '') +
+                                'Buy: KSh ' + item.buyPrice + ' | Sell: KSh ' + item.sellPrice + 
+                            '</div>' +
+                            auditLog +
+                        '</div>' +
+                        '<div style="text-align: right;">' +
+                            '<div style="font-size: 1.5rem; font-weight: bold; color: ' + (item.quantity === 0 ? '#ef4444' : '#10b981') + ';">' + item.quantity + '</div>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+            document.getElementById('stockList').innerHTML = html || '<p style="text-align: center; color: #6b7280; padding: 2rem;">No products in inventory. Add items to get started.</p>';
+        }
+
+        // Render Reports
+        function renderReports() {
+            var stats = calculateStats();
+            
+            document.getElementById('reportTotalSales').textContent = sales.length;
+            document.getElementById('reportTotalRevenue').textContent = 'KSh ' + stats.totalRevenue.toLocaleString();
+            document.getElementById('reportTotalProfit').textContent = 'KSh ' + stats.totalProfit.toLocaleString();
+        }
+
+        // Export Data
+        function exportData() {
+            var data = {
+                shop: {
+                    shopId: currentUser.shopId,
+                    shopName: currentUser.shopName,
+                    ownerName: currentUser.ownerName
+                },
+                inventory: inventory,
+                sales: sales,
+                exportDate: new Date().toLocaleString()
+            };
+            
+            var dataStr = JSON.stringify(data, null, 2);
+            var dataBlob = new Blob([dataStr], { type: 'application/json' });
+            var url = URL.createObjectURL(dataBlob);
+            var link = document.createElement('a');
+            link.href = url;
+            link.download = currentUser.shopId + '-backup-' + Date.now() + '.json';
+            link.click();
+        }
+
+        // Initialize on load
+        window.onload = init;
+    </script>
+</body>
+</html>
