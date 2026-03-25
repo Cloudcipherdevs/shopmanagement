@@ -769,9 +769,10 @@
             <h2 style="font-size: 1.25rem; font-weight: bold;">📷 Scan Items to Add</h2>
             <button onclick="stopStockScanning()" style="background: #ef4444; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; border: none; font-weight: bold;">Done</button>
         </div>
-        
-        <div style="position: relative; flex: 1;">
-            <video id="scannerVideo" class="scanner-video" autoplay playsinline></video>
+
+        <div style="position: relative; flex: 1; overflow: hidden; background: black;">
+            <!-- Quagga renders its own video inside this div -->
+            <div id="scannerViewport" style="width: 100%; height: 100%;"></div>
             <div class="scanner-overlay"></div>
             <div class="scanner-instructions">
                 Position barcode within the frame<br>
@@ -781,11 +782,11 @@
                 ✅ Scanned!
             </div>
         </div>
-        
+
         <canvas id="scannerCanvas" style="display: none;"></canvas>
     </div>
 
-    <!-- Production Barcode Library -->
+    <!-- Quagga Barcode Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
     
     <!-- Firebase SDK -->
@@ -1449,71 +1450,96 @@
             scannedItems = [];
             document.getElementById('scannedCount').textContent = '0';
 
-            Quagga.init({
-                inputStream: {
-                    name: "Live",
-                    type: "LiveStream",
-                    target: document.getElementById('scannerVideo'),
-                    constraints: {
-                        facingMode: "environment"
+            // Small delay to let the scanner div become visible before Quagga init
+            setTimeout(function() {
+                Quagga.init({
+                    inputStream: {
+                        name: "Live",
+                        type: "LiveStream",
+                        target: document.getElementById('scannerViewport'), // ✅ target the DIV not video
+                        constraints: {
+                            width: { min: 640 },
+                            height: { min: 480 },
+                            facingMode: "environment" // back camera on phones
+                        }
+                    },
+                    locator: {
+                        patchSize: "medium",
+                        halfSample: true
+                    },
+                    numOfWorkers: 2,
+                    frequency: 10,
+                    decoder: {
+                        readers: [
+                            "ean_reader",
+                            "ean_8_reader",
+                            "code_128_reader",
+                            "upc_reader",
+                            "upc_e_reader",
+                            "code_39_reader"
+                        ]
+                    },
+                    locate: true
+                }, function(err) {
+                    if (err) {
+                        console.error('Quagga init error:', err);
+                        alert('❌ Camera could not start.\n\nMake sure you:\n1. Allowed camera permission\n2. Are using https:// or localhost\n3. Have a working camera\n\nError: ' + err);
+                        document.getElementById('cameraScanner').classList.remove('active');
+                        return;
                     }
-                },
-                decoder: {
-                    readers: [
-                        "ean_reader",
-                        "ean_8_reader",
-                        "code_128_reader",
-                        "upc_reader",
-                        "upc_e_reader"
-                    ]
-                }
-            }, function(err) {
-                if (err) {
-                    alert('Camera error: ' + err);
-                    stopStockScanning();
-                    return;
-                }
-                Quagga.start();
-            });
-
-            Quagga.onDetected(function(result) {
-                var code = result.codeResult.code;
-
-                var alreadyScanned = scannedItems.find(function(i) {
-                    return i.barcode === code;
-                });
-                if (alreadyScanned) return;
-
-                var existing = inventory.find(function(p) {
-                    return p.barcode === code;
+                    console.log('✅ Quagga started');
+                    Quagga.start();
                 });
 
-                var itemName = existing ? existing.name : 'Unknown - ' + code;
+                // Listen for detected barcodes
+                Quagga.onDetected(function(result) {
+                    var code = result.codeResult.code;
+                    if (!code) return;
 
-                scannedItems.push({
-                    barcode: code,
-                    name: itemName,
-                    quantity: 1,
-                    scannedAt: new Date().toLocaleString(),
-                    addedBy: currentUser.ownerName
+                    // Skip if already scanned
+                    var alreadyScanned = scannedItems.find(function(i) {
+                        return i.barcode === code;
+                    });
+                    if (alreadyScanned) return;
+
+                    // Check if product already exists in inventory
+                    var existing = inventory.find(function(p) {
+                        return p.barcode === code;
+                    });
+
+                    var itemName = existing ? existing.name : 'Unknown - ' + code;
+
+                    scannedItems.push({
+                        barcode: code,
+                        name: itemName,
+                        quantity: 1,
+                        scannedAt: new Date().toLocaleString(),
+                        addedBy: currentUser.ownerName
+                    });
+
+                    document.getElementById('scannedCount').textContent = scannedItems.length;
+
+                    // Flash green success animation
+                    var successEl = document.getElementById('scanSuccess');
+                    successEl.textContent = '✅ ' + itemName;
+                    successEl.classList.add('active');
+                    setTimeout(function() {
+                        successEl.classList.remove('active');
+                    }, 1200);
                 });
 
-                document.getElementById('scannedCount').textContent = scannedItems.length;
-
-                var successEl = document.getElementById('scanSuccess');
-                successEl.classList.add('active');
-                setTimeout(function() {
-                    successEl.classList.remove('active');
-                }, 1000);
-            });
+            }, 300);
         }
 
         // Stop Stock Scanning
         function stopStockScanning() {
-            Quagga.stop();
+            try { Quagga.stop(); } catch(e) { console.log('Quagga stop:', e); }
             document.getElementById('cameraScanner').classList.remove('active');
 
-            if (scannedItems.length === 0) return;
+            if (scannedItems.length === 0) {
+                alert('No items were scanned.');
+                return;
+            }
 
             if (currentUser.role === 'owner') {
                 scannedItems.forEach(function(item) {
@@ -1538,7 +1564,7 @@
                 });
                 saveUserData();
                 renderStockList();
-                alert('✅ ' + scannedItems.length + ' item(s) added to inventory!');
+                alert('✅ ' + scannedItems.length + ' item(s) added to inventory!\n\nNote: Set buy/sell prices for new items.');
             } else {
                 var users = getAllUsers();
                 var userIndex = users.findIndex(function(u) {
