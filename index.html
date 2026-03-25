@@ -1023,9 +1023,11 @@
             localStorage.setItem(USERS_KEY, JSON.stringify(users));
         }
 
-        // Generate Shop ID
-        function generateShopId(shopName) {
-            return shopName.toLowerCase().replace(/[^a-z0-9]/g, '') + Math.floor(Math.random() * 1000);
+        // Generate Shop ID from Shop Name + Phone
+        function generateShopId(shopName, phone) {
+            var cleanName = shopName.toLowerCase().replace(/[^a-z0-9]/g, '');
+            var phoneSuffix = phone.replace(/[^0-9]/g, '').slice(-4);
+            return cleanName + '-' + phoneSuffix;
         }
 
         // Handle Registration
@@ -1065,7 +1067,7 @@
             }
 
             var users = getAllUsers();
-            var shopId = generateShopId(shopName);
+            var shopId = generateShopId(shopName, phone);
             
             var existingUser = users.find(function(u) {
                 return u.shopId === shopId || (email && u.email === email);
@@ -1439,6 +1441,121 @@
             link.href = url;
             link.download = currentUser.shopId + '-backup-' + Date.now() + '.json';
             link.click();
+        }
+
+        // Start Stock Scanning
+        function startStockScanning() {
+            document.getElementById('cameraScanner').classList.add('active');
+            scannedItems = [];
+            document.getElementById('scannedCount').textContent = '0';
+
+            Quagga.init({
+                inputStream: {
+                    name: "Live",
+                    type: "LiveStream",
+                    target: document.getElementById('scannerVideo'),
+                    constraints: {
+                        facingMode: "environment"
+                    }
+                },
+                decoder: {
+                    readers: [
+                        "ean_reader",
+                        "ean_8_reader",
+                        "code_128_reader",
+                        "upc_reader",
+                        "upc_e_reader"
+                    ]
+                }
+            }, function(err) {
+                if (err) {
+                    alert('Camera error: ' + err);
+                    stopStockScanning();
+                    return;
+                }
+                Quagga.start();
+            });
+
+            Quagga.onDetected(function(result) {
+                var code = result.codeResult.code;
+
+                var alreadyScanned = scannedItems.find(function(i) {
+                    return i.barcode === code;
+                });
+                if (alreadyScanned) return;
+
+                var existing = inventory.find(function(p) {
+                    return p.barcode === code;
+                });
+
+                var itemName = existing ? existing.name : 'Unknown - ' + code;
+
+                scannedItems.push({
+                    barcode: code,
+                    name: itemName,
+                    quantity: 1,
+                    scannedAt: new Date().toLocaleString(),
+                    addedBy: currentUser.ownerName
+                });
+
+                document.getElementById('scannedCount').textContent = scannedItems.length;
+
+                var successEl = document.getElementById('scanSuccess');
+                successEl.classList.add('active');
+                setTimeout(function() {
+                    successEl.classList.remove('active');
+                }, 1000);
+            });
+        }
+
+        // Stop Stock Scanning
+        function stopStockScanning() {
+            Quagga.stop();
+            document.getElementById('cameraScanner').classList.remove('active');
+
+            if (scannedItems.length === 0) return;
+
+            if (currentUser.role === 'owner') {
+                scannedItems.forEach(function(item) {
+                    var existing = inventory.find(function(p) {
+                        return p.barcode === item.barcode;
+                    });
+                    if (existing) {
+                        existing.quantity += item.quantity;
+                    } else {
+                        inventory.push({
+                            id: Date.now() + Math.random(),
+                            name: item.name,
+                            barcode: item.barcode,
+                            buyPrice: 0,
+                            sellPrice: 0,
+                            quantity: item.quantity,
+                            totalInvested: 0,
+                            addedBy: item.addedBy,
+                            addedAt: item.scannedAt
+                        });
+                    }
+                });
+                saveUserData();
+                renderStockList();
+                alert('✅ ' + scannedItems.length + ' item(s) added to inventory!');
+            } else {
+                var users = getAllUsers();
+                var userIndex = users.findIndex(function(u) {
+                    return u.shopId === currentUser.shopId;
+                });
+                if (userIndex !== -1) {
+                    users[userIndex].pendingStock = users[userIndex].pendingStock || [];
+                    scannedItems.forEach(function(item) {
+                        users[userIndex].pendingStock.push(item);
+                    });
+                    saveAllUsers(users);
+                }
+                alert('⏳ ' + scannedItems.length + ' item(s) sent to owner for approval!');
+            }
+
+            scannedItems = [];
+            renderStockList();
         }
 
         // Initialize on load
